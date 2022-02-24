@@ -1,4 +1,4 @@
-# [PROJECT NAME]
+# Good enough project template
 
 ## Project organization
 - PG = project-generated
