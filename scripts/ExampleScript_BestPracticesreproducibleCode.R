@@ -1,33 +1,20 @@
 
 #### EXAMPLE: DESCRIPTIVE ANALYSIS BEHAVIOR - PHYSICAL SCORE ####
 
-#### Clear environment
-rm(list = ls())
+#### Load packages, load data and define variables 
 
-### change 1
-### change 2
-### change 3
-### change 4
+Behavior_data <- read.csv("data/processed/ExampleData_BestPracticesreproducibleCode.csv", header=TRUE, sep=";", dec=",")
 
-
-#### Working directory, packages, load data and define variables 
-
-setwd("C:/Users/6259464/OneDrive - Universiteit Utrecht/Courses/BPRC")
-
-Behavior_data <- read.csv("C:/Users/6259464/OneDrive - Universiteit Utrecht/Courses
-                       /BPRC/ExampleData_BestPracticesreproducibleCode.csv", 
-                       header=TRUE, sep=";", dec=",")
 #View(Behavior_data)
 str(Behavior_data)
 
+#install.packages("rlang")
 library(ggplot2)
 library(gridExtra)
 library(pastecs)
 library(Hmisc)
 library(lintr)
-lint("C:/Users/6259464/OneDrive - Universiteit Utrecht/Courses/BPRC/
-     ExampleScript_BestPracticesreproducibleCode.R")
-
+library(docstring)
 
 #?as.POSIXct
 Behavior_data$Round <- as.factor(Behavior_data$Round)
@@ -56,22 +43,52 @@ str(Behavior_data)
 
 #Binomial data no outliers, check deviance residuals with final model
 
-#plot(fitted.values(fit),residuals(fit, type = "deviance"))# Higher or lower than 2/-2 outlier --> see modern methods
-#OR
-#plot(predicted(fit),residuals(fit, type = "deviance"))
+#### Function for boxplotting ####
 
-## Behavior2 ##
+
+plotPhysicalBehavior <- function(column){
+  #' @title plot physical score and behavior
+  #' @description boxplot of physical score for each behavior 1 or 2 days before
+  #' @param x is the physical score
+  #' @param y is the proportion behavior performed 1 or 2 days before physical score
+  column <- sym(column)
+  
+  ggplot(data=subset(Behavior_data, !is.na(Physical)), 
+         aes(x=Physical, y = !!column, fill = Physical)) + geom_boxplot()
+  
+}
+
+
+?plotPhysicalBehavior
+
+#### Physical-behavior boxplots and cleveland plots ####
+
+## Behavior1 ##
+
+boxplot(Behavior_data$Behavior1Min1)
+boxplot(Behavior_data$Behavior1Min2)
+
+PhysicalBehavior1Min1 <- plotPhysicalBehavior("Behavior1Min1")
+PhysicalBehavior1Min1 
+PhysicalBehavior1Min2 <- plotPhysicalBehavior("Behavior1Min2")
+PhysicalBehavior1Min2
+
+ClevelandBehavior1Min1 <- ggplot(Behavior_data) + geom_point(aes(y=Behavior2Min1,x=seq(1,length(Behavior2Min1),1))) 
+ClevelandBehavior1Min1# no apparent outliers
+
+ClevelandBehavior2Min1 <- ggplot(Behavior_data) + geom_point(aes(y=Behavior2Min1,x=seq(1,length(Behavior2Min1),1))) 
+ClevelandBehavior2Min1# no apparent outliers
+
+## Behavior 2 ##
 
 boxplot(Behavior_data$Behavior2Min1)
 boxplot(Behavior_data$Behavior2Min2)
 
-PhysicalBehavior2Min1 <- ggplot(data=subset(Behavior_data, !is.na(Physical)), 
-                             aes(x=Physical, y = Behavior2Min1, fill = Physical)) + geom_boxplot()
-PhysicalBehavior2Min1# no apparent outliers
+PhysicalBehavior2Min1 <- plotPhysicalBehavior("Behavior2Min1")
+PhysicalBehavior2Min1 
+PhysicalBehavior2Min2 <- plotPhysicalBehavior("Behavior2Min2")
+PhysicalBehavior2Min2
 
-PhysicalBehavior2Min2 <- ggplot(data=subset(Behavior_data, !is.na(Physical)), 
-                             aes(x=Physical, y = Behavior2Min2, fill = Physical)) + geom_boxplot()
-PhysicalBehavior2Min2# no apparent outliers
 
 ClevelandBehavior2Min1 <- ggplot(Behavior_data) + geom_point(aes(y=Behavior2Min1,x=seq(1,length(Behavior2Min1),1))) 
 ClevelandBehavior2Min1# no apparent outliers
@@ -79,24 +96,7 @@ ClevelandBehavior2Min1# no apparent outliers
 ClevelandBehavior2Min2 <- ggplot(Behavior_data) + geom_point(aes(y=Behavior2Min2,x=seq(1,length(Behavior2Min2),1))) 
 ClevelandBehavior2Min2# no apparent outliers
 
-## Behavior1 ##
 
-boxplot(Behavior_data$Behavior1Min1)
-boxplot(Behavior_data$Behavior1Min2)
-
-PhysicalBehavior1Min1 <- ggplot(data=subset(Behavior_data, !is.na(Physical)), 
-                               aes(x=Physical, y = Behavior1Min1, fill = Physical)) + geom_boxplot()
-PhysicalBehavior1Min1# outliers?
-
-PhysicalBehavior1Min2 <- ggplot(data=subset(Behavior_data, !is.na(Physical)), 
-                               aes(x=Physical, y = Behavior1Min2, fill = Physical)) + geom_boxplot()
-PhysicalBehavior1Min2# outliers?
-
-ClevelandBehavior1Min1 <- ggplot(Behavior_data) + geom_point(aes(y=Behavior1Min1,x=seq(1,length(Behavior1Min1),1))) 
-ClevelandBehavior1Min1# no apparent outliers
-
-ClevelandBehavior1Min2 <- ggplot(Behavior_data) + geom_point(aes(y=Behavior1Min2,x=seq(1,length(Behavior1Min2),1))) 
-ClevelandBehavior1Min2# no apparent outliers
 
 ## Behavior5 ##
 
@@ -180,123 +180,120 @@ ClevelandBehavior6Min2# no apparent outliers
 
 #### 2. Homogeneity ####
 
-#Binomial data --> Check with residuals of models during backward stepwise regression
-#residuals(fit)
-#fitted.values(fit)
-#plot(fitted.values(fit),residuals(fit))
+#Binomial data physical score --> Check with residuals of models during backward stepwise regression
 
 
-#### Behaviors (not response) ####
+#### Behaviors ####
 
-## Behavior3 (as Y)##
+## Behavior3 ##
 
 PlotPigPhysicalBehavior3Min1 <- ggplot(data=subset(Behavior_data, !is.na(Physical)), aes(y = Behavior3Min1, x = Physical)) +
   xlab("PhysicalScore") + ylab("Proportion Behavior3 (-1 days)") + 
   geom_boxplot(alpha = 0.2, aes(fill = Physical), show.legend = FALSE) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-PlotPigPhysicalBehavior3Min1#Similar variance across fecal scores
+PlotPigPhysicalBehavior3Min1#Similar variance across physical scores
 
 PlotPigPhysicalRoundBehavior3Min1 <- ggplot(data=subset(Behavior_data, !is.na(Physical)), aes(y = Behavior3Min1, x = Round)) +
   xlab("PhysicalScore") + ylab("Proportion Behavior3 (-1 days)") + 
   geom_boxplot(alpha = 0.2, aes(fill = Physical), show.legend = FALSE) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-PlotPigPhysicalRoundBehavior3Min1#Similar variance across fecal scores and rounds
+PlotPigPhysicalRoundBehavior3Min1#Similar variance across physical scores and rounds
 
-PlotPigPhysicalDayBehavior3Min1 <- ggplot(data=Behavior_data, aes(y = Behavior3Min1, x = Physical, fill = Pen)) +
-  geom_point(stat="identity", position = position_dodge(width = 0.75), size = 0.4, aes(color = Pen)) + 
+PlotPigPhysicalDayBehavior3Min1 <- ggplot(data=Behavior_data, aes(y = Behavior3Min1, x = Physical, fill = LocationPen)) +
+  geom_point(stat="identity", position = position_dodge(width = 0.75), size = 0.4, aes(color = LocationPen)) + 
   xlab("PhysicalScore") + ylab("Proportion Behavior3 (-1 days)") + 
-  geom_boxplot(alpha = 0.2, aes(fill = Pen), show.legend = TRUE) +
+  geom_boxplot(alpha = 0.2, aes(fill = LocationPen), show.legend = TRUE) +
   facet_wrap(Behavior_data$Round) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-PlotPigPhysicalDayBehavior3Min1#Unequal variances across fecal scores across pens within rounds?
+PlotPigPhysicalDayBehavior3Min1#Unequal variances across physical scores across LocationPens within rounds?
 
 
 PlotPigPhysicalDayBehavior3Min2 <- ggplot(data=subset(Behavior_data, !is.na(Physical)), aes(y = Behavior3Min2, x = Physical)) +
   xlab("PhysicalScore") + ylab("Proportion Behavior3 (-2 days)") + 
   geom_boxplot(alpha = 0.2, aes(fill = Physical), show.legend = FALSE) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-PlotPigPhysicalDayBehavior3Min2#Similar variances across fecal scores
+PlotPigPhysicalDayBehavior3Min2#Similar variances across physical scores
 
 PlotPigPhysicalDayBehavior3Min2 <- ggplot(data=subset(Behavior_data, !is.na(Physical)), aes(y = Behavior3Min2, x = Physical)) +
   xlab("PhysicalScore") + ylab("Proportion Behavior3 (-2 days)") + 
   geom_boxplot(alpha = 0.2, aes(fill = Round), show.legend = FALSE) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-PlotPigPhysicalDayBehavior3Min2#Similar variances across fecal scores and rounds
+PlotPigPhysicalDayBehavior3Min2#Similar variances across physical scores and rounds
 
-PlotPigPhysicalDayBehavior3Min2 <- ggplot(data=Behavior_data, aes(y = Behavior3Min2, x = Physical, fill = Pen)) +
-  geom_point(stat="identity", position = position_dodge(width = 0.75), size = 0.4, aes(color = Pen)) + 
+PlotPigPhysicalDayBehavior3Min2 <- ggplot(data=Behavior_data, aes(y = Behavior3Min2, x = Physical, fill = LocationPen)) +
+  geom_point(stat="identity", position = position_dodge(width = 0.75), size = 0.4, aes(color = LocationPen)) + 
   xlab("PhysicalScore") + ylab("Proportion Behavior3 (-2 days)") + 
-  geom_boxplot(alpha = 0.2, aes(fill = Pen), show.legend = TRUE) +
+  geom_boxplot(alpha = 0.2, aes(fill = LocationPen), show.legend = TRUE) +
   facet_wrap(Behavior_data$Round) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-PlotPigPhysicalDayBehavior3Min2#Similar variances across fecal scores across pens, within rounds
+PlotPigPhysicalDayBehavior3Min2#Similar variances across physical scores across LocationPens, within rounds
 #Unequal across rounds
 
-## Behavior4 (as Y) ##
+## Behavior4 ##
 
 PlotPigPhysicalDayBehavior4Min1 <- ggplot(data=subset(Behavior_data, !is.na(Physical)), aes(y = Behavior4Min1, x = Physical)) +
   xlab("PhysicalScore") + ylab("Proportion Behavior4 (-1 days)") + 
   geom_boxplot(alpha = 0.2, aes(fill = Physical), show.legend = FALSE) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-PlotPigPhysicalDayBehavior4Min1#Similar variances across fecal scores
+PlotPigPhysicalDayBehavior4Min1#Similar variances across physical scores
 
 PlotPigPhysicalDayBehavior4Min1 <- ggplot(data=subset(Behavior_data, !is.na(Physical)), aes(y = Behavior4Min1, x = Physical)) +
   xlab("PhysicalScore") + ylab("Proportion Behavior4 (-1 days)") + 
   geom_boxplot(alpha = 0.2, aes(fill = Round), show.legend = FALSE) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-PlotPigPhysicalDayBehavior4Min1#Similar variances across fecal scores across rounds
+PlotPigPhysicalDayBehavior4Min1#Similar variances across physical scores across rounds
 
-PlotPigPhysicalDayBehavior4Min1 <- ggplot(data=Behavior_data, aes(y = Behavior4Min1, x = Physical, fill = Pen)) +
-  geom_point(stat="identity", position = position_dodge(width = 0.75), size = 0.4, aes(color = Pen)) + 
+PlotPigPhysicalDayBehavior4Min1 <- ggplot(data=Behavior_data, aes(y = Behavior4Min1, x = Physical, fill = LocationPen)) +
+  geom_point(stat="identity", position = position_dodge(width = 0.75), size = 0.4, aes(color = LocationPen)) + 
   xlab("PhysicalScore") + ylab("Proportion Behavior4 (-1 days)") + 
-  geom_boxplot(alpha = 0.2, aes(fill = Pen), show.legend = TRUE) +
+  geom_boxplot(alpha = 0.2, aes(fill = LocationPen), show.legend = TRUE) +
   facet_wrap(Behavior_data$Round) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-PlotPigPhysicalDayBehavior4Min1#Unequal variances across fecal scores across pens within rounds?
+PlotPigPhysicalDayBehavior4Min1#Unequal variances across physical scores across LocationPens within rounds?
 
 
 PlotPigPhysicalDayBehavior4Min2 <- ggplot(data=subset(Behavior_data, !is.na(Physical)), aes(y = Behavior4Min2, x = Physical)) +
   xlab("PhysicalScore") + ylab("Proportion Behavior4 (-2 days)") + 
   geom_boxplot(alpha = 0.2, aes(fill = Physical), show.legend = FALSE) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-PlotPigPhysicalDayBehavior4Min2#Similar variances across fecal scores
+PlotPigPhysicalDayBehavior4Min2#Similar variances across physical scores
 
 PlotPigPhysicalDayBehavior4Min2 <- ggplot(data=subset(Behavior_data, !is.na(Physical)), aes(y = Behavior4Min2, x = Physical)) +
   xlab("PhysicalScore") + ylab("Proportion Behavior4 (-2 days)") + 
   geom_boxplot(alpha = 0.2, aes(fill = Round), show.legend = FALSE) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-PlotPigPhysicalDayBehavior4Min2#Similar variances across fecal scores across rounds
+PlotPigPhysicalDayBehavior4Min2#Similar variances across physical scores across rounds
 
-PlotPigPhysicalDayBehavior4Min2 <- ggplot(data=Behavior_data, aes(y = Behavior4Min2, x = Physical, fill = Pen)) +
-  geom_point(stat="identity", position = position_dodge(width = 0.75), size = 0.4, aes(color = Pen)) + 
+PlotPigPhysicalDayBehavior4Min2 <- ggplot(data=Behavior_data, aes(y = Behavior4Min2, x = Physical, fill = LocationPen)) +
+  geom_point(stat="identity", position = position_dodge(width = 0.75), size = 0.4, aes(color = LocationPen)) + 
   xlab("PhysicalScore") + ylab("Proportion Behavior4 (-2 days)") + 
-  geom_boxplot(alpha = 0.2, aes(fill = Pen), show.legend = TRUE) +
+  geom_boxplot(alpha = 0.2, aes(fill = LocationPen), show.legend = TRUE) +
   facet_wrap(Behavior_data$Round) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-PlotPigPhysicalDayBehavior4Min2#Similar variances across fecal scores across pens, within rounds
+PlotPigPhysicalDayBehavior4Min2#Similar variances across physical scores across LocationPens, within rounds
 #Unequal across rounds
 
-## Behavior5 (as Y) ##
+## Behavior5 ##
 
 PlotPigPhysicalDayBehavior5Min1 <- ggplot(data=subset(Behavior_data, !is.na(Physical)), aes(y = Behavior5Min1, x = Physical)) +
   xlab("PhysicalScore") + ylab("Proportion Behavior5 (-1 days)") + 
   geom_boxplot(alpha = 0.2, aes(fill = Physical), show.legend = FALSE) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-PlotPigPhysicalDayBehavior5Min1#Similar variances across fecal scores across rounds
+PlotPigPhysicalDayBehavior5Min1#Similar variances across physical scores across rounds
 
 PlotPigPhysicalDayBehavior5Min1 <- ggplot(data=subset(Behavior_data, !is.na(Physical)), aes(y = Behavior5Min1, x = Physical)) +
   xlab("PhysicalScore") + ylab("Proportion Behavior5 (-1 days)") + 
   geom_boxplot(alpha = 0.2, aes(fill = Round), show.legend = FALSE) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-PlotPigPhysicalDayBehavior5Min1#Similar variances across fecal scores across rounds
+PlotPigPhysicalDayBehavior5Min1#Similar variances across physical scores across rounds
 
-PlotPigPhysicalDayBehavior5Min1 <- ggplot(data=Behavior_data, aes(y = Behavior5Min1, x = Physical, fill = Pen)) +
-  geom_point(stat="identity", position = position_dodge(width = 0.75), size = 0.4, aes(color = Pen)) + 
+PlotPigPhysicalDayBehavior5Min1 <- ggplot(data=Behavior_data, aes(y = Behavior5Min1, x = Physical, fill = LocationPen)) +
+  geom_point(stat="identity", position = position_dodge(width = 0.75), size = 0.4, aes(color = LocationPen)) + 
   xlab("PhysicalScore") + ylab("Proportion Behavior5 (-1 days)") + 
-  geom_boxplot(alpha = 0.2, aes(fill = Pen), show.legend = TRUE) +
+  geom_boxplot(alpha = 0.2, aes(fill = LocationPen), show.legend = TRUE) +
   facet_wrap(Behavior_data$Round) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-PlotPigPhysicalDayBehavior5Min1#Similar variances across fecal scores across pens, within rounds
+PlotPigPhysicalDayBehavior5Min1#Similar variances across physical scores across LocationPens, within rounds
 #Unequal across rounds
 
 
@@ -304,158 +301,158 @@ PlotPigPhysicalDayBehavior5Min2 <- ggplot(data=subset(Behavior_data, !is.na(Phys
   xlab("PhysicalScore") + ylab("Proportion Behavior5 (-2 days)") + 
   geom_boxplot(alpha = 0.2, aes(fill = Physical), show.legend = FALSE) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-PlotPigPhysicalDayBehavior5Min2#Similar variances across fecal scores across rounds
+PlotPigPhysicalDayBehavior5Min2#Similar variances across physical scores across rounds
 
 PlotPigPhysicalDayBehavior5Min2 <- ggplot(data=subset(Behavior_data, !is.na(Physical)), aes(y = Behavior5Min2, x = Physical)) +
   xlab("PhysicalScore") + ylab("Proportion Behavior5 (-2 days)") + 
   geom_boxplot(alpha = 0.2, aes(fill = Round), show.legend = FALSE) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-PlotPigPhysicalDayBehavior5Min2#Similar variances across fecal scores across rounds
+PlotPigPhysicalDayBehavior5Min2#Similar variances across physical scores across rounds
 
-PlotPigPhysicalDayBehavior5Min2 <- ggplot(data=Behavior_data, aes(y = Behavior5Min2, x = Physical, fill = Pen)) +
-  geom_point(stat="identity", position = position_dodge(width = 0.75), size = 0.4, aes(color = Pen)) + 
+PlotPigPhysicalDayBehavior5Min2 <- ggplot(data=Behavior_data, aes(y = Behavior5Min2, x = Physical, fill = LocationPen)) +
+  geom_point(stat="identity", position = position_dodge(width = 0.75), size = 0.4, aes(color = LocationPen)) + 
   xlab("PhysicalScore") + ylab("Proportion Behavior5 (-2 days)") + 
-  geom_boxplot(alpha = 0.2, aes(fill = Pen), show.legend = TRUE) +
+  geom_boxplot(alpha = 0.2, aes(fill = LocationPen), show.legend = TRUE) +
   facet_wrap(Behavior_data$Round) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-PlotPigPhysicalDayBehavior5Min2#Unequal variances across fecal scores across pens within rounds?
+PlotPigPhysicalDayBehavior5Min2#Unequal variances across physical scores across LocationPens within rounds?
 
-## Behavior2 (as Y) ##
+## Behavior2 ##
 
 PlotPigPhysicalDayBehavior2Min1 <- ggplot(data=subset(Behavior_data, !is.na(Physical)), aes(y = Behavior2Min1, x = Physical)) +
   xlab("PhysicalScore") + ylab("Proportion Behavior2 (-1 days)") + 
   geom_boxplot(alpha = 0.2, aes(fill = Physical), show.legend = FALSE) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-PlotPigPhysicalDayBehavior2Min1#Similar variances across fecal scores across rounds
+PlotPigPhysicalDayBehavior2Min1#Similar variances across physical scores across rounds
 
 PlotPigPhysicalDayBehavior2Min1 <- ggplot(data=subset(Behavior_data, !is.na(Physical)), aes(y = Behavior2Min1, x = Physical)) +
   xlab("PhysicalScore") + ylab("Proportion Behavior2 (-1 days)") + 
   geom_boxplot(alpha = 0.2, aes(fill = Round), show.legend = FALSE) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-PlotPigPhysicalDayBehavior2Min1#Similar variances across fecal scores across rounds
+PlotPigPhysicalDayBehavior2Min1#Similar variances across physical scores across rounds
 
-PlotPigPhysicalDayBehavior2Min1 <- ggplot(data=Behavior_data, aes(y = Behavior2Min1, x = Physical, fill = Pen)) +
-  geom_point(stat="identity", position = position_dodge(width = 0.75), size = 0.4, aes(color = Pen)) + 
+PlotPigPhysicalDayBehavior2Min1 <- ggplot(data=Behavior_data, aes(y = Behavior2Min1, x = Physical, fill = LocationPen)) +
+  geom_point(stat="identity", position = position_dodge(width = 0.75), size = 0.4, aes(color = LocationPen)) + 
   xlab("PhysicalScore") + ylab("Proportion Behavior2 (-1 days)") + 
-  geom_boxplot(alpha = 0.2, aes(fill = Pen), show.legend = TRUE) +
+  geom_boxplot(alpha = 0.2, aes(fill = LocationPen), show.legend = TRUE) +
   facet_wrap(Behavior_data$Round) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-PlotPigPhysicalDayBehavior2Min1#Similar variances across fecal scores across pens, within ans across rounds
+PlotPigPhysicalDayBehavior2Min1#Similar variances across physical scores across LocationPens, within ans across rounds
 
 
 PlotPigPhysicalDayBehavior2Min2 <- ggplot(data=subset(Behavior_data, !is.na(Physical)), aes(y = Behavior2Min2, x = Physical)) +
   xlab("PhysicalScore") + ylab("Proportion Behavior2 (-2 days)") + 
   geom_boxplot(alpha = 0.2, aes(fill = Round), show.legend = FALSE) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-PlotPigPhysicalDayBehavior2Min2#Similar variances across fecal scores across rounds
+PlotPigPhysicalDayBehavior2Min2#Similar variances across physical scores across rounds
 
 PlotPigPhysicalDayBehavior2Min2 <- ggplot(data=subset(Behavior_data, !is.na(Physical)), aes(y = Behavior2Min2, x = Physical)) +
   xlab("PhysicalScore") + ylab("Proportion Behavior2 (-2 days)") + 
   geom_boxplot(alpha = 0.2, aes(fill = Round), show.legend = FALSE) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-PlotPigPhysicalDayBehavior2Min2#Similar variances across fecal scores across rounds
+PlotPigPhysicalDayBehavior2Min2#Similar variances across physical scores across rounds
 
-PlotPigPhysicalDayBehavior2Min2 <- ggplot(data=Behavior_data, aes(y = Behavior2Min2, x = Physical, fill = Pen)) +
-  geom_point(stat="identity", position = position_dodge(width = 0.75), size = 0.4, aes(color = Pen)) + 
+PlotPigPhysicalDayBehavior2Min2 <- ggplot(data=Behavior_data, aes(y = Behavior2Min2, x = Physical, fill = LocationPen)) +
+  geom_point(stat="identity", position = position_dodge(width = 0.75), size = 0.4, aes(color = LocationPen)) + 
   xlab("PhysicalScore") + ylab("Proportion Behavior2 (-2 days)") + 
-  geom_boxplot(alpha = 0.2, aes(fill = Pen), show.legend = TRUE) +
+  geom_boxplot(alpha = 0.2, aes(fill = LocationPen), show.legend = TRUE) +
   facet_wrap(Behavior_data$Round) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-PlotPigPhysicalDayBehavior2Min2#Unequal variances across fecal scores across pens, within and across rounds
+PlotPigPhysicalDayBehavior2Min2#Unequal variances across physical scores across LocationPens, within and across rounds
 
-## Behavior1 (as Y) ##
+## Behavior1 ##
 
 PlotPigPhysicalDayBehavior1Min1 <- ggplot(data=subset(Behavior_data, !is.na(Physical)), aes(y = Behavior1Min1, x = Physical)) +
   xlab("PhysicalScore") + ylab("Proportion Behavior1 (-1 days)") + 
   geom_boxplot(alpha = 0.2, aes(fill = Physical), show.legend = FALSE) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-PlotPigPhysicalDayBehavior1Min1#Similar variances across fecal scores across rounds
+PlotPigPhysicalDayBehavior1Min1#Similar variances across physical scores across rounds
 
 PlotPigPhysicalDayBehavior1Min1 <- ggplot(data=subset(Behavior_data, !is.na(Physical)), aes(y = Behavior1Min1, x = Physical)) +
   xlab("PhysicalScore") + ylab("Proportion Behavior1 (-1 days)") + 
   geom_boxplot(alpha = 0.2, aes(fill = Round), show.legend = FALSE) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-PlotPigPhysicalDayBehavior1Min1#Similar variances across fecal scores across rounds
+PlotPigPhysicalDayBehavior1Min1#Similar variances across physical scores across rounds
 
-PlotPigPhysicalDayBehavior1Min1 <- ggplot(data=Behavior_data, aes(y = Behavior1Min1, x = Physical, fill = Pen)) +
-  geom_point(stat="identity", position = position_dodge(width = 0.75), size = 0.4, aes(color = Pen)) + 
+PlotPigPhysicalDayBehavior1Min1 <- ggplot(data=Behavior_data, aes(y = Behavior1Min1, x = Physical, fill = LocationPen)) +
+  geom_point(stat="identity", position = position_dodge(width = 0.75), size = 0.4, aes(color = LocationPen)) + 
   xlab("PhysicalScore") + ylab("Proportion Behavior1 (-1 days)") + 
-  geom_boxplot(alpha = 0.2, aes(fill = Pen), show.legend = TRUE) +
+  geom_boxplot(alpha = 0.2, aes(fill = LocationPen), show.legend = TRUE) +
   facet_wrap(Behavior_data$Round) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-PlotPigPhysicalDayBehavior1Min1#Unequal variances across fecal scores across pens, within and across rounds
+PlotPigPhysicalDayBehavior1Min1#Unequal variances across physical scores across LocationPens, within and across rounds
 
 
 PlotPigPhysicalDayBehavior1Min2 <- ggplot(data=subset(Behavior_data, !is.na(Physical)), aes(y = Behavior1Min2, x = Physical)) +
   xlab("PhysicalScore") + ylab("Proportion Behavior1 (-2 days)") + 
   geom_boxplot(alpha = 0.2, aes(fill = Physical), show.legend = FALSE) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-PlotPigPhysicalDayBehavior1Min2#Similar variances across fecal scores across rounds
+PlotPigPhysicalDayBehavior1Min2#Similar variances across physical scores across rounds
 
 PlotPigPhysicalDayBehavior1Min2 <- ggplot(data=subset(Behavior_data, !is.na(Physical)), aes(y = Behavior1Min2, x = Physical)) +
   xlab("PhysicalScore") + ylab("Proportion Behavior1 (-2 days)") + 
   geom_boxplot(alpha = 0.2, aes(fill = Round), show.legend = FALSE) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-PlotPigPhysicalDayBehavior1Min2#Similar variances across fecal scores across rounds
+PlotPigPhysicalDayBehavior1Min2#Similar variances across physical scores across rounds
 
-PlotPigPhysicalDayBehavior1Min2 <- ggplot(data=Behavior_data, aes(y = Behavior1Min2, x = Physical, fill = Pen)) +
-  geom_point(stat="identity", position = position_dodge(width = 0.75), size = 0.4, aes(color = Pen)) + 
+PlotPigPhysicalDayBehavior1Min2 <- ggplot(data=Behavior_data, aes(y = Behavior1Min2, x = Physical, fill = LocationPen)) +
+  geom_point(stat="identity", position = position_dodge(width = 0.75), size = 0.4, aes(color = LocationPen)) + 
   xlab("PhysicalScore") + ylab("Proportion Behavior1 (-2 days)") + 
-  geom_boxplot(alpha = 0.2, aes(fill = Pen), show.legend = TRUE) +
+  geom_boxplot(alpha = 0.2, aes(fill = LocationPen), show.legend = TRUE) +
   facet_wrap(Behavior_data$Round) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-PlotPigPhysicalDayBehavior1Min2#Unequal variances across fecal scores across pens, within and across rounds
+PlotPigPhysicalDayBehavior1Min2#Unequal variances across physical scores across LocationPens, within and across rounds
 
-## Behavior6 (as Y) ##
+## Behavior6 ##
 
 PlotPigPhysicalDayBehavior6Min1 <- ggplot(data=subset(Behavior_data, !is.na(Physical)), aes(y = Behavior6Min1, x = Physical)) +
   xlab("PhysicalScore") + ylab("Proportion Behavior6 (-1 days)") + 
   geom_boxplot(alpha = 0.2, aes(fill = Physical), show.legend = FALSE) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-PlotPigPhysicalDayBehavior6Min1#Similar variances across fecal scores
+PlotPigPhysicalDayBehavior6Min1#Similar variances across physical scores
 
 PlotPigPhysicalDayBehavior6Min1 <- ggplot(data=subset(Behavior_data, !is.na(Physical)), aes(y = Behavior6Min1, x = Physical)) +
   xlab("PhysicalScore") + ylab("Proportion Behavior6 (-1 days)") + 
   geom_boxplot(alpha = 0.2, aes(fill = Round), show.legend = FALSE) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-PlotPigPhysicalDayBehavior6Min1#Similar variances across fecal scores across rounds
+PlotPigPhysicalDayBehavior6Min1#Similar variances across physical scores across rounds
 
-PlotPigPhysicalDayBehavior6Min1 <- ggplot(data=Behavior_data, aes(y = Behavior6Min1, x = Physical, fill = Pen)) +
-  geom_point(stat="identity", position = position_dodge(width = 0.75), size = 0.4, aes(color = Pen)) + 
+PlotPigPhysicalDayBehavior6Min1 <- ggplot(data=Behavior_data, aes(y = Behavior6Min1, x = Physical, fill = LocationPen)) +
+  geom_point(stat="identity", position = position_dodge(width = 0.75), size = 0.4, aes(color = LocationPen)) + 
   xlab("PhysicalScore") + ylab("Proportion Behavior6 (-1 days)") + 
-  geom_boxplot(alpha = 0.2, aes(fill = Pen), show.legend = TRUE) +
+  geom_boxplot(alpha = 0.2, aes(fill = LocationPen), show.legend = TRUE) +
   facet_wrap(Behavior_data$Round) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-PlotPigPhysicalDayBehavior6Min1#Similar variances across fecal scores across pens, within and across rounds
+PlotPigPhysicalDayBehavior6Min1#Similar variances across physical scores across LocationPens, within and across rounds
 
 
 PlotPigPhysicalDayBehavior6Min2 <- ggplot(data=subset(Behavior_data, !is.na(Physical)), aes(y = Behavior6Min2, x = Physical)) +
   xlab("PhysicalScore") + ylab("Proportion Behavior6 (-2 days)") + 
   geom_boxplot(alpha = 0.2, aes(fill = Physical), show.legend = FALSE) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-PlotPigPhysicalDayBehavior6Min2#Similar variances across fecal scores
+PlotPigPhysicalDayBehavior6Min2#Similar variances across physical scores
 
 PlotPigPhysicalDayBehavior6Min2 <- ggplot(data=subset(Behavior_data, !is.na(Physical)), aes(y = Behavior6Min2, x = Physical)) +
   xlab("PhysicalScore") + ylab("Proportion Behavior6 (-2 days)") + 
   geom_boxplot(alpha = 0.2, aes(fill = Round), show.legend = FALSE) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-PlotPigPhysicalDayBehavior6Min2#Similar variances across fecal scores across rounds
+PlotPigPhysicalDayBehavior6Min2#Similar variances across physical scores across rounds
 
-PlotPigPhysicalDayBehavior6Min2 <- ggplot(data=Behavior_data, aes(y = Behavior6Min2, x = Physical, fill = Pen)) +
-  geom_point(stat="identity", position = position_dodge(width = 0.75), size = 0.4, aes(color = Pen)) + 
+PlotPigPhysicalDayBehavior6Min2 <- ggplot(data=Behavior_data, aes(y = Behavior6Min2, x = Physical, fill = LocationPen)) +
+  geom_point(stat="identity", position = position_dodge(width = 0.75), size = 0.4, aes(color = LocationPen)) + 
   xlab("PhysicalScore") + ylab("Proportion Behavior6 (-2 days)") + 
-  geom_boxplot(alpha = 0.2, aes(fill = Pen), show.legend = TRUE) +
+  geom_boxplot(alpha = 0.2, aes(fill = LocationPen), show.legend = TRUE) +
   facet_wrap(Behavior_data$Round) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
-PlotPigPhysicalDayBehavior6Min2#Similar variances across fecal scores across pens, within and across rounds
+PlotPigPhysicalDayBehavior6Min2#Similar variances across physical scores across LocationPens, within and across rounds
 
 
 
 #### 3. Distribution ####
 
-#Fecals scores binomial distribution
+#physical scores binomial distribution
 
-#### Behaviors (not response) ####
+#### Behaviors  ####
 
 ## Behavior1 ## 
 
@@ -523,7 +520,7 @@ abline(mean(Behavior_data$Behavior6Min2),sd(Behavior_data$Behavior6Min2))
 
 #Not relevant for binomial data
 
-#### 5. Colinearity ####
+#### 5. Relationships y and x ####
 
 ## Visualization ##
 
@@ -540,10 +537,10 @@ PlotPigPhysicalDayBehavior3Min1 <- ggplot(data=subset(Behavior_data, !is.na(Phys
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 PlotPigPhysicalDayBehavior3Min1
 
-PlotPigPhysicalDayBehavior3Min1 <- ggplot(data=Behavior_data, aes(y = Behavior3Min1, x = Physical, fill = Pen)) +
-  geom_point(stat="identity", position = position_dodge(width = 0.75), size = 0.4, aes(color = Pen)) + 
+PlotPigPhysicalDayBehavior3Min1 <- ggplot(data=Behavior_data, aes(y = Behavior3Min1, x = Physical, fill = LocationPen)) +
+  geom_point(stat="identity", position = position_dodge(width = 0.75), size = 0.4, aes(color = LocationPen)) + 
   xlab("PhysicalScore") + ylab("Proportion Behavior3 (-1 days)") + 
-  geom_boxplot(alpha = 0.2, aes(fill = Pen), show.legend = TRUE) +
+  geom_boxplot(alpha = 0.2, aes(fill = LocationPen), show.legend = TRUE) +
   facet_wrap(Behavior_data$Round) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 PlotPigPhysicalDayBehavior3Min1
@@ -561,10 +558,10 @@ PlotPigPhysicalDayBehavior3Min2 <- ggplot(data=subset(Behavior_data, !is.na(Phys
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 PlotPigPhysicalDayBehavior3Min2
 
-PlotPigPhysicalDayBehavior3Min2 <- ggplot(data=Behavior_data, aes(y = Behavior3Min2, x = Physical, fill = Pen)) +
-  geom_point(stat="identity", position = position_dodge(width = 0.75), size = 0.4, aes(color = Pen)) + 
+PlotPigPhysicalDayBehavior3Min2 <- ggplot(data=Behavior_data, aes(y = Behavior3Min2, x = Physical, fill = LocationPen)) +
+  geom_point(stat="identity", position = position_dodge(width = 0.75), size = 0.4, aes(color = LocationPen)) + 
   xlab("PhysicalScore") + ylab("Proportion Behavior3 (-2 days)") + 
-  geom_boxplot(alpha = 0.2, aes(fill = Pen), show.legend = TRUE) +
+  geom_boxplot(alpha = 0.2, aes(fill = LocationPen), show.legend = TRUE) +
   facet_wrap(Behavior_data$Round) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 PlotPigPhysicalDayBehavior3Min2
@@ -583,10 +580,10 @@ PlotPigPhysicalDayBehavior4Min1 <- ggplot(data=subset(Behavior_data, !is.na(Phys
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 PlotPigPhysicalDayBehavior4Min1
 
-PlotPigPhysicalDayBehavior4Min1 <- ggplot(data=Behavior_data, aes(y = Behavior4Min1, x = Physical, fill = Pen)) +
-  geom_point(stat="identity", position = position_dodge(width = 0.75), size = 0.4, aes(color = Pen)) + 
+PlotPigPhysicalDayBehavior4Min1 <- ggplot(data=Behavior_data, aes(y = Behavior4Min1, x = Physical, fill = LocationPen)) +
+  geom_point(stat="identity", position = position_dodge(width = 0.75), size = 0.4, aes(color = LocationPen)) + 
   xlab("PhysicalScore") + ylab("Proportion Behavior4 (-1 days)") + 
-  geom_boxplot(alpha = 0.2, aes(fill = Pen), show.legend = TRUE) +
+  geom_boxplot(alpha = 0.2, aes(fill = LocationPen), show.legend = TRUE) +
   facet_wrap(Behavior_data$Round) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 PlotPigPhysicalDayBehavior4Min1
@@ -604,10 +601,10 @@ PlotPigPhysicalDayBehavior4Min2 <- ggplot(data=subset(Behavior_data, !is.na(Phys
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 PlotPigPhysicalDayBehavior4Min2
 
-PlotPigPhysicalDayBehavior4Min2 <- ggplot(data=Behavior_data, aes(y = Behavior4Min2, x = Physical, fill = Pen)) +
-  geom_point(stat="identity", position = position_dodge(width = 0.75), size = 0.4, aes(color = Pen)) + 
+PlotPigPhysicalDayBehavior4Min2 <- ggplot(data=Behavior_data, aes(y = Behavior4Min2, x = Physical, fill = LocationPen)) +
+  geom_point(stat="identity", position = position_dodge(width = 0.75), size = 0.4, aes(color = LocationPen)) + 
   xlab("PhysicalScore") + ylab("Proportion Behavior4 (-2 days)") + 
-  geom_boxplot(alpha = 0.2, aes(fill = Pen), show.legend = TRUE) +
+  geom_boxplot(alpha = 0.2, aes(fill = LocationPen), show.legend = TRUE) +
   facet_wrap(Behavior_data$Round) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 PlotPigPhysicalDayBehavior4Min2
@@ -626,10 +623,10 @@ PlotPigPhysicalDayBehavior5Min1 <- ggplot(data=subset(Behavior_data, !is.na(Phys
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 PlotPigPhysicalDayBehavior5Min1
 
-PlotPigPhysicalDayBehavior5Min1 <- ggplot(data=Behavior_data, aes(y = Behavior5Min1, x = Physical, fill = Pen)) +
-  geom_point(stat="identity", position = position_dodge(width = 0.75), size = 0.4, aes(color = Pen)) + 
+PlotPigPhysicalDayBehavior5Min1 <- ggplot(data=Behavior_data, aes(y = Behavior5Min1, x = Physical, fill = LocationPen)) +
+  geom_point(stat="identity", position = position_dodge(width = 0.75), size = 0.4, aes(color = LocationPen)) + 
   xlab("PhysicalScore") + ylab("Proportion Behavior5 (-1 days)") + 
-  geom_boxplot(alpha = 0.2, aes(fill = Pen), show.legend = TRUE) +
+  geom_boxplot(alpha = 0.2, aes(fill = LocationPen), show.legend = TRUE) +
   facet_wrap(Behavior_data$Round) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 PlotPigPhysicalDayBehavior5Min1
@@ -647,10 +644,10 @@ PlotPigPhysicalDayBehavior5Min2 <- ggplot(data=subset(Behavior_data, !is.na(Phys
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 PlotPigPhysicalDayBehavior5Min2
 
-PlotPigPhysicalDayBehavior5Min2 <- ggplot(data=Behavior_data, aes(y = Behavior5Min2, x = Physical, fill = Pen)) +
-  geom_point(stat="identity", position = position_dodge(width = 0.75), size = 0.4, aes(color = Pen)) + 
+PlotPigPhysicalDayBehavior5Min2 <- ggplot(data=Behavior_data, aes(y = Behavior5Min2, x = Physical, fill = LocationPen)) +
+  geom_point(stat="identity", position = position_dodge(width = 0.75), size = 0.4, aes(color = LocationPen)) + 
   xlab("PhysicalScore") + ylab("Proportion Behavior5 (-2 days)") + 
-  geom_boxplot(alpha = 0.2, aes(fill = Pen), show.legend = TRUE) +
+  geom_boxplot(alpha = 0.2, aes(fill = LocationPen), show.legend = TRUE) +
   facet_wrap(Behavior_data$Round) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 PlotPigPhysicalDayBehavior5Min2
@@ -669,10 +666,10 @@ PlotPigPhysicalDayBehavior2Min1 <- ggplot(data=subset(Behavior_data, !is.na(Phys
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 PlotPigPhysicalDayBehavior2Min1
 
-PlotPigPhysicalDayBehavior2Min1 <- ggplot(data=Behavior_data, aes(y = Behavior2Min1, x = Physical, fill = Pen)) +
-  geom_point(stat="identity", position = position_dodge(width = 0.75), size = 0.4, aes(color = Pen)) + 
+PlotPigPhysicalDayBehavior2Min1 <- ggplot(data=Behavior_data, aes(y = Behavior2Min1, x = Physical, fill = LocationPen)) +
+  geom_point(stat="identity", position = position_dodge(width = 0.75), size = 0.4, aes(color = LocationPen)) + 
   xlab("PhysicalScore") + ylab("Proportion Behavior2 (-1 days)") + 
-  geom_boxplot(alpha = 0.2, aes(fill = Pen), show.legend = TRUE) +
+  geom_boxplot(alpha = 0.2, aes(fill = LocationPen), show.legend = TRUE) +
   facet_wrap(Behavior_data$Round) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 PlotPigPhysicalDayBehavior2Min1
@@ -708,10 +705,10 @@ PlotPigPhysicalDayBehavior1Min1 <- ggplot(data=subset(Behavior_data, !is.na(Phys
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 PlotPigPhysicalDayBehavior1Min1
 
-PlotPigPhysicalDayBehavior1Min1 <- ggplot(data=Behavior_data, aes(y = Behavior1Min1, x = Physical, fill = Pen)) +
-  geom_point(stat="identity", position = position_dodge(width = 0.75), size = 0.4, aes(color = Pen)) + 
+PlotPigPhysicalDayBehavior1Min1 <- ggplot(data=Behavior_data, aes(y = Behavior1Min1, x = Physical, fill = LocationPen)) +
+  geom_point(stat="identity", position = position_dodge(width = 0.75), size = 0.4, aes(color = LocationPen)) + 
   xlab("PhysicalScore") + ylab("Proportion Behavior1 (-1 days)") + 
-  geom_boxplot(alpha = 0.2, aes(fill = Pen), show.legend = TRUE) +
+  geom_boxplot(alpha = 0.2, aes(fill = LocationPen), show.legend = TRUE) +
   facet_wrap(Behavior_data$Round) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 PlotPigPhysicalDayBehavior1Min1
@@ -729,10 +726,10 @@ PlotPigPhysicalDayBehavior1Min2 <- ggplot(data=subset(Behavior_data, !is.na(Phys
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 PlotPigPhysicalDayBehavior1Min2
 
-PlotPigPhysicalDayBehavior1Min2 <- ggplot(data=Behavior_data, aes(y = Behavior1Min2, x = Physical, fill = Pen)) +
-  geom_point(stat="identity", position = position_dodge(width = 0.75), size = 0.4, aes(color = Pen)) + 
+PlotPigPhysicalDayBehavior1Min2 <- ggplot(data=Behavior_data, aes(y = Behavior1Min2, x = Physical, fill = LocationPen)) +
+  geom_point(stat="identity", position = position_dodge(width = 0.75), size = 0.4, aes(color = LocationPen)) + 
   xlab("PhysicalScore") + ylab("Proportion Behavior1 (-2 days)") + 
-  geom_boxplot(alpha = 0.2, aes(fill = Pen), show.legend = TRUE) +
+  geom_boxplot(alpha = 0.2, aes(fill = LocationPen), show.legend = TRUE) +
   facet_wrap(Behavior_data$Round) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 PlotPigPhysicalDayBehavior1Min2
@@ -751,10 +748,10 @@ PlotPigPhysicalDayBehavior6Min1 <- ggplot(data=subset(Behavior_data, !is.na(Phys
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 PlotPigPhysicalDayBehavior6Min1
 
-PlotPigPhysicalDayBehavior6Min1 <- ggplot(data=Behavior_data, aes(y = Behavior6Min1, x = Physical, fill = Pen)) +
-  geom_point(stat="identity", position = position_dodge(width = 0.75), size = 0.4, aes(color = Pen)) + 
+PlotPigPhysicalDayBehavior6Min1 <- ggplot(data=Behavior_data, aes(y = Behavior6Min1, x = Physical, fill = LocationPen)) +
+  geom_point(stat="identity", position = position_dodge(width = 0.75), size = 0.4, aes(color = LocationPen)) + 
   xlab("PhysicalScore") + ylab("Proportion Behavior6 (-1 days)") + 
-  geom_boxplot(alpha = 0.2, aes(fill = Pen), show.legend = TRUE) +
+  geom_boxplot(alpha = 0.2, aes(fill = LocationPen), show.legend = TRUE) +
   facet_wrap(Behavior_data$Round) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 PlotPigPhysicalDayBehavior6Min1
@@ -772,10 +769,10 @@ PlotPigPhysicalDayBehavior6Min2 <- ggplot(data=subset(Behavior_data, !is.na(Phys
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 PlotPigPhysicalDayBehavior6Min2
 
-PlotPigPhysicalDayBehavior6Min2 <- ggplot(data=Behavior_data, aes(y = Behavior6Min2, x = Physical, fill = Pen)) +
-  geom_point(stat="identity", position = position_dodge(width = 0.75), size = 0.4, aes(color = Pen)) + 
+PlotPigPhysicalDayBehavior6Min2 <- ggplot(data=Behavior_data, aes(y = Behavior6Min2, x = Physical, fill = LocationPen)) +
+  geom_point(stat="identity", position = position_dodge(width = 0.75), size = 0.4, aes(color = LocationPen)) + 
   xlab("PhysicalScore") + ylab("Proportion Behavior6 (-2 days)") + 
-  geom_boxplot(alpha = 0.2, aes(fill = Pen), show.legend = TRUE) +
+  geom_boxplot(alpha = 0.2, aes(fill = LocationPen), show.legend = TRUE) +
   facet_wrap(Behavior_data$Round) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 PlotPigPhysicalDayBehavior6Min2
