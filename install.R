@@ -1,0 +1,5 @@
+install.packages("ggplot2")
+install.packages("gridExtra")
+install.packages("pastecs")
+install.packages("Hmisc")
+install.packages("docstring")
