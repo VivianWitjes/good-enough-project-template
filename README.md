@@ -35,8 +35,6 @@ Descriptive analysis of the relation between a physical score and the proportion
 days before collecting the physical score in pigs.
 
 
-```
-
 ## Download project
 
 Make sure the latest version of R studio is downloaded from 
@@ -81,7 +79,9 @@ lattice version 0.20-41
 download from:
 https://cran.r-project.org/web/packages/available_packages_by_name.html
 
-```
+## Badges
+
+binder: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/VivianWitjes/good-enough-project-template/main)`
 
 ## License
 
